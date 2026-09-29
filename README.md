@@ -103,9 +103,9 @@ real Solidity, not just one person. All three slices share the same
 - [x] Deploys to a local chain; manually verified via Hardhat console
 - [x] `npm run node` / `npm run seed` scripts for one-command local setup
       with demo data
-- [ ] `getEvidence` / `verifyHash` functions (Member 2)
+- [x] `getEvidence` / `verifyHash` functions and hash-mismatch tests (Member 2)
 - [ ] Access control + case indexing (Member 3)
-- [ ] `backend/` Spring Boot project
+- [x] `backend/` Spring Boot project with Member 2 verification endpoints
 - [ ] `frontend/` UI
 - [ ] Web3j integration (backend ↔ chain)
 - [ ] End-to-end demo rehearsal + slide deck
