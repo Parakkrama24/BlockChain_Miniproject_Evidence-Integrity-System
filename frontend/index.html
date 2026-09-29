@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Case Dashboard</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Evidence Integrity System</p>
+          <h1>Case Dashboard</h1>
+        </div>
+
+        <div class="topbar-actions">
+          <div class="status-pill">
+            <span class="status-dot"></span>
+            Blockchain live
+          </div>
+          <button id="refreshBtn" class="primary-btn">Refresh</button>
+        </div>
+      </header>
+
+      <main class="dashboard-grid">
+        <section class="panel hero-panel">
+          <div class="hero-intro">
+            <p class="mini-label">Operational Review</p>
+            <h2>Evidence access and case integrity</h2>
+          </div>
+
+          <div class="metrics-row">
+            <div class="metric-box">
+              <span>Total Cases</span>
+              <strong id="caseCount">0</strong>
+            </div>
+            <div class="metric-box">
+              <span>Evidence Items</span>
+              <strong id="evidenceCount">0</strong>
+            </div>
+            <div class="metric-box">
+              <span>Authorized</span>
+              <strong id="investigatorCount">0</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-header">
+            <h2>Investigators</h2>
+          </div>
+          <form id="investigatorForm" class="inline-form">
+            <input id="addressInput" type="text" placeholder="0x..." />
+            <button type="submit" class="primary-btn">Authorize</button>
+          </form>
+          <div id="investigatorList" class="chip-row"></div>
+        </section>
+
+        <section id="casesSection" class="cases-grid"></section>
+
+        <section class="panel audit-panel">
+          <div class="section-header">
+            <h2>Audit Trail</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Evidence ID</th>
+                  <th>Case</th>
+                  <th>Uploader</th>
+                  <th>File</th>
+                  <th>Timestamp</th>
+                  <th>Tx Hash</th>
+                </tr>
+              </thead>
+              <tbody id="auditBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
