@@ -33,6 +33,8 @@ blockchain/
 |---|---|
 | `registerEvidence(caseId, fileName, sha256Hash)` | Stores a new evidence record, returns its `evidenceId`, emits `EvidenceRegistered` |
 | `records(evidenceId)` | Auto-generated getter (from `public` mapping) — reads back a stored record |
+| `getEvidence(evidenceId)` | Reads one complete evidence record from the chain |
+| `verifyHash(evidenceId, currentHash)` | Returns whether a current SHA-256 hash matches the chain |
 | `nextId` | Auto-incrementing counter used to assign unique evidence IDs |
 
 ## One-time setup
@@ -47,9 +49,9 @@ npm install
 npx hardhat test
 ```
 
-Currently covers: correct data storage, `EvidenceRegistered` event emission
-with correct arguments, and ID auto-incrementing across multiple
-registrations.
+Currently covers: correct data storage, `EvidenceRegistered` event emission,
+ID auto-incrementing, exact hash verification, one-byte hash mismatch
+detection, and zero-value reads for unknown IDs.
 
 ## Running a local blockchain (for backend integration / demo)
 

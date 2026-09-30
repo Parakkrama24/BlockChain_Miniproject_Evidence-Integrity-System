@@ -79,4 +79,14 @@ contract EvidenceRegistry {
 
         emit EvidenceRegistered(evidenceId, caseId, sha256Hash, msg.sender, block.timestamp);
     }
+
+    // Reads the complete on-chain record for verification and display.
+    function getEvidence(uint256 evidenceId) external view returns (EvidenceRecord memory) {
+        return records[evidenceId];
+    }
+
+    // Compares a newly calculated file hash with the immutable on-chain hash.
+    function verifyHash(uint256 evidenceId, bytes32 currentHash) external view returns (bool) {
+        return records[evidenceId].sha256Hash == currentHash;
+    }
 }
