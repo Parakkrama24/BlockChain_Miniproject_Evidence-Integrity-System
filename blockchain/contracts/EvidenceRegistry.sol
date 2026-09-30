@@ -20,6 +20,21 @@ contract EvidenceRegistry {
     // Starts at 0 (Solidity's default for uint256).
     uint256 public nextId;
 
+    // Member 3 additions: track by case and enforce investigator-only registration.
+    mapping(string => uint256[]) private caseEvidenceIds;
+    mapping(address => bool) public isInvestigator;
+    address public admin;
+
+    constructor() {
+        admin = msg.sender;
+        isInvestigator[msg.sender] = true; // deployer is an investigator by default (dev convenience)
+    }
+
+    modifier onlyInvestigator() {
+        require(isInvestigator[msg.sender], "Not an authorized investigator");
+        _;
+    }
+
     // Emitted every time evidence is registered — lets off-chain apps
     // (like the Spring Boot backend) watch for new registrations
     // without having to poll contract storage.
@@ -31,6 +46,15 @@ contract EvidenceRegistry {
         uint256 timestamp
     );
 
+    function addInvestigator(address account) external {
+        require(msg.sender == admin, "Only admin");
+        isInvestigator[account] = true;
+    }
+
+    function getEvidenceByCase(string calldata caseId) external view returns (uint256[] memory) {
+        return caseEvidenceIds[caseId];
+    }
+
     // Registers a new piece of evidence and returns its assigned ID.
     // external: only callable from outside the contract (e.g. the backend).
     // calldata: cheapest storage location for read-only function params.
@@ -38,7 +62,7 @@ contract EvidenceRegistry {
         string calldata caseId,
         string calldata fileName,
         bytes32 sha256Hash
-    ) external returns (uint256 evidenceId) {
+    ) external onlyInvestigator returns (uint256 evidenceId) {
         evidenceId = nextId;      // assign the current counter value as this record's ID
         nextId = nextId + 1;      // bump the counter so the next call gets a fresh ID
 
@@ -51,6 +75,7 @@ contract EvidenceRegistry {
             msg.sender,
             block.timestamp
         );
+        caseEvidenceIds[caseId].push(evidenceId);
 
         emit EvidenceRegistered(evidenceId, caseId, sha256Hash, msg.sender, block.timestamp);
     }
