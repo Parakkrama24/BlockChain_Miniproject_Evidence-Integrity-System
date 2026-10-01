@@ -76,8 +76,11 @@ see **[PROJECT_GUIDE.md](PROJECT_GUIDE.md)**.
 │   ├── scripts/seed.js
 │   ├── ignition/modules/
 │   └── README.md                 # blockchain-layer setup & usage
-├── backend/                       # Spring Boot project (Member 2) — not yet created
-└── frontend/                      # UI (Member 3) — not yet created
+├── backend/                       # Spring Boot project — REST API + Web3j chain client
+│   └── src/main/resources/static/
+│       ├── register.html          # write-path page: hash + register evidence on-chain
+│       └── verify.html            # tamper-check page: VERIFIED / TAMPERED
+└── frontend/                      # Vite case dashboard — cases, audit trail, investigators
 ```
 
 ## Team split
@@ -97,41 +100,87 @@ real Solidity, not just one person. All three slices share the same
 ## Current status
 
 - [x] `blockchain/` — Hardhat project set up (Hardhat 2, Solidity 0.8.28)
-- [x] `EvidenceRegistry.sol` — struct, storage mapping, `registerEvidence`
-      function, `EvidenceRegistered` event
-- [x] Tests passing: data correctness, event emission, ID auto-incrementing
-- [x] Deploys to a local chain; manually verified via Hardhat console
-- [x] `npm run node` / `npm run seed` scripts for one-command local setup
-      with demo data
-- [x] `getEvidence` / `verifyHash` functions and hash-mismatch tests (Member 2)
-- [ ] Access control + case indexing (Member 3)
-- [x] `backend/` Spring Boot project with Member 2 verification endpoints
-- [ ] `frontend/` UI
-- [ ] Web3j integration (backend ↔ chain)
+- [x] `EvidenceRegistry.sol` — struct, storage mapping, `registerEvidence`,
+      `getEvidence`, `verifyHash`, `getEvidenceByCase`, `addInvestigator` +
+      `onlyInvestigator` access control
+- [x] 10 passing tests: data correctness, event emission, ID auto-incrementing,
+      hash verification, tamper (hash-mismatch) detection, access control,
+      case indexing
+- [x] Deploys to a local chain; `npm run node` / `npm run seed` for
+      one-command local setup with demo data
+- [x] `backend/` Spring Boot project — full REST API (register, verify,
+      cases, audit trail, investigators) wired to the chain via Web3j,
+      including real transaction signing (not just reads)
+- [x] `frontend/` Vite case dashboard — cases, audit trail, investigator
+      authorization, all reading live from chain
+- [x] `register.html` / `verify.html` write-path and verify-path pages,
+      sharing one visual theme and cross-linked nav with the dashboard
+- [x] Demo account switcher — lets a presenter pick which test account signs
+      a registration, to live-demo an unauthorized account being rejected
+      and then succeeding after authorization
 - [ ] End-to-end demo rehearsal + slide deck
 
-## Getting started (blockchain layer)
+## Getting started (full system)
 
+Four terminals, started in this order.
+
+**1. Local blockchain** — start it and leave it running:
 ```bash
 cd blockchain
-npm install
-npm run node      # terminal 1 — starts local chain, leave running
-npm run seed       # terminal 2 — deploys contract + registers demo evidence
+npm install          # first time only
+npm run node
 ```
 
-Full details, including what happens when the local chain resets and how
-to hand off the contract to the backend: see
-**[blockchain/README.md](blockchain/README.md)**.
+**2. Deploy + seed demo evidence** — new terminal, once the node is up:
+```bash
+cd blockchain
+npm run seed
+```
+Prints the deployed contract address. The backend's `application.yml` already
+defaults to the address a fresh local chain produces, so you normally don't
+need to change anything — just double-check they match if something seems off.
 
-`backend/` and `frontend/` setup instructions will be added here once
-those projects are scaffolded.
+**3. Backend** — new terminal:
+```bash
+cd backend
+mvn spring-boot:run
+```
+No `mvn` on your PATH? Run the `EvidenceApplication` class directly from your
+IDE instead (IntelliJ: right-click it → Run). Starts on `http://localhost:8080`.
+
+**4. Frontend dashboard** — new terminal:
+```bash
+cd frontend
+npm install          # first time only
+npm run dev
+```
+Starts on `http://localhost:5173`.
+
+### Once everything is running
+
+| Page | URL | What it's for |
+|---|---|---|
+| Register Evidence | `http://localhost:8080/register.html` | Upload a file, pick a signing account, commit its hash on-chain |
+| Verify Evidence | `http://localhost:8080/verify.html` | Re-upload a file and check it against the on-chain hash — VERIFIED / TAMPERED |
+| Case Dashboard | `http://localhost:5173` | Case/evidence listing, audit trail, investigator authorization |
+
+All three pages link to each other through the top nav bar.
+
+### The local chain resets on every restart
+
+`npx hardhat node` keeps all state in memory only — closing that terminal (or
+restarting your machine) wipes every registered evidence item and
+investigator authorization. Just repeat steps 1–2 to get a fresh, seeded
+chain again. Full details: **[blockchain/README.md](blockchain/README.md)**.
 
 ## Tech stack
 
 - **Blockchain:** Solidity `^0.8.28`, Hardhat 2, ethers.js v6
-- **Backend:** Java, Spring Boot, Web3j (planned)
-- **Frontend:** Thymeleaf or React (planned)
-- **Database:** H2 for evidence metadata cache (planned)
+- **Backend:** Java 21, Spring Boot 3, Web3j (JSON-RPC + transaction signing)
+- **Frontend:** plain JS + Vite (case dashboard); static HTML/JS pages served
+  by the backend for register/verify
+- **Database:** H2 (file-based) for evidence metadata cache — chain remains
+  the source of truth
 
 ## License
 
