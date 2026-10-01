@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx hardhat test --no-telemetry",
-    "node": "hardhat node --no-telemetry",
+    "test": "hardhat test",
+    "node": "hardhat node",
     "seed": "hardhat run scripts/seed.js --network localhost"
   },
   "keywords": [],

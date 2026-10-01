@@ -100,6 +100,8 @@ describe("EvidenceRegistry", function () {
     expect(record.sha256Hash).to.equal(ethers.ZeroHash);
     expect(record.uploader).to.equal(ethers.ZeroAddress);
     expect(record.timestamp).to.equal(0);
+  });
+
   it("should reject non-investigators from registering evidence", async function () {
     const hash = ethers.sha256(ethers.toUtf8Bytes("unauthorized file"));
 
