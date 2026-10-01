@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
   datasource:
     url: jdbc:h2:file:./data/evidence
     driver-class-name: org.h2.Driver
@@ -12,7 +16,13 @@ spring:
 evidence:
   blockchain:
     rpc-url: ${BLOCKCHAIN_RPC_URL:http://127.0.0.1:8545}
-    contract-address: ${EVIDENCE_REGISTRY_ADDRESS:}
+    contract-address: ${EVIDENCE_REGISTRY_ADDRESS:0x5FbDB2315678afecb367f032d93F642f64180aa3}
+    # Hardhat's well-known default account #0 (test mnemonic "test test ... junk").
+    # Safe only on a local chain -- never use this key anywhere real.
+    private-key: ${BLOCKCHAIN_PRIVATE_KEY:0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80}
+    admin-address: ${BLOCKCHAIN_ADMIN_ADDRESS:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266}
+  storage:
+    dir: ${EVIDENCE_STORAGE_DIR:./data/files}
 
 server:
   port: ${PORT:8080}

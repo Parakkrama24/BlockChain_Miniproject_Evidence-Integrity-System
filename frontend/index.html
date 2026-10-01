@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
+    <nav>
+      <div class="nav-inner">
+        <a href="http://localhost:8080/register.html">Register</a>
+        <a href="http://localhost:8080/verify.html">Verify</a>
+        <a href="/" class="active">Dashboard</a>
+      </div>
+    </nav>
     <div class="page-shell">
       <header class="topbar">
         <div>
@@ -51,9 +58,11 @@
             <h2>Investigators</h2>
           </div>
           <form id="investigatorForm" class="inline-form">
-            <input id="addressInput" type="text" placeholder="0x..." />
+            <input id="addressInput" type="text" placeholder="0x..." list="demoSigners" />
+            <datalist id="demoSigners"></datalist>
             <button type="submit" class="primary-btn">Authorize</button>
           </form>
+          <div id="investigatorError" style="color: var(--red); font: .85rem Arial, sans-serif; margin-bottom: .75rem;"></div>
           <div id="investigatorList" class="chip-row"></div>
         </section>
 

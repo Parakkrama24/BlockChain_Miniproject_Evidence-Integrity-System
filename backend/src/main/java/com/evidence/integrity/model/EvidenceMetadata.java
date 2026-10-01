@@ -21,6 +21,19 @@ public class EvidenceMetadata {
 
     protected EvidenceMetadata() { }
 
+    public EvidenceMetadata(Long id, String caseId, String fileName, String storagePath, String sha256Hash,
+                            String uploader, Instant uploadedAt, Long chainEvidenceId, String txHash) {
+        this.id = id;
+        this.caseId = caseId;
+        this.fileName = fileName;
+        this.storagePath = storagePath;
+        this.sha256Hash = sha256Hash;
+        this.uploader = uploader;
+        this.uploadedAt = uploadedAt;
+        this.chainEvidenceId = chainEvidenceId;
+        this.txHash = txHash;
+    }
+
     public Long getId() { return id; }
     public String getCaseId() { return caseId; }
     public String getFileName() { return fileName; }

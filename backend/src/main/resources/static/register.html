@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register Evidence</title>
+    <style>
+        :root { color-scheme: light; font-family: Georgia, serif; --ink: #1d252c; --paper: #f5f1e9; --line: #c9c1b5; --green: #176b4d; --red: #a52c2c; }
+        body { margin: 0; color: var(--ink); background: radial-gradient(circle at top right, #fff 0, var(--paper) 48%, #e7dfd2 100%); min-height: 100vh; }
+        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 20; background: var(--paper); border-bottom: 1px solid var(--line); }
+        nav .nav-inner { max-width: 920px; margin: 0 auto; padding: 1.25rem 1.5rem; display: flex; gap: 1.5rem; font: 700 .78rem Arial, sans-serif; text-transform: uppercase; letter-spacing: .08em; }
+        nav a { color: #5d625f; text-decoration: none; }
+        nav a.active { color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: .3rem; }
+        main { max-width: 920px; margin: 0 auto; padding: 6.5rem 1.5rem 4rem; }
+        .eyebrow { letter-spacing: .16em; text-transform: uppercase; font: 700 .72rem Arial, sans-serif; color: #756e64; }
+        h1 { font-size: clamp(2.5rem, 7vw, 5.5rem); line-height: .95; margin: .75rem 0 1rem; max-width: 680px; }
+        .intro { font: 1.1rem/1.5 Arial, sans-serif; max-width: 600px; color: #5d625f; }
+        form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 3rem 0 2rem; padding: 1.25rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        form .full { grid-column: 1 / -1; }
+        label { display: grid; gap: .45rem; font: 700 .78rem Arial, sans-serif; text-transform: uppercase; letter-spacing: .08em; }
+        input, select { box-sizing: border-box; width: 100%; border: 1px solid var(--line); background: #fffdf9; padding: .85rem; font: 1rem Arial, sans-serif; }
+        .hint { grid-column: 1 / -1; margin: -.5rem 0 0; font: .82rem/1.4 Arial, sans-serif; color: #756e64; }
+        button { border: 0; padding: .9rem 1.4rem; background: var(--ink); color: white; font: 700 .85rem Arial, sans-serif; cursor: pointer; grid-column: 1 / -1; justify-self: start; }
+        button:disabled { opacity: .5; cursor: wait; }
+        #result { display: none; }
+        .banner { padding: 1.2rem 1.4rem; color: white; font: 700 1.5rem Arial, sans-serif; letter-spacing: .08em; background: var(--green); }
+        .details { display: grid; gap: 1rem; margin-top: 1rem; }
+        .detail { border-top: 4px solid var(--line); padding: 1rem 0; }
+        .detail strong { display: block; font: 700 .75rem Arial, sans-serif; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .6rem; }
+        code { overflow-wrap: anywhere; font: .95rem/1.45 Consolas, monospace; }
+        #error { color: var(--red); font: 1rem Arial, sans-serif; margin-top: 1rem; }
+        @media (max-width: 680px) { form { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="nav-inner">
+        <a href="/register.html" class="active">Register</a>
+        <a href="/verify.html">Verify</a>
+        <a href="http://localhost:5173">Dashboard</a>
+    </div>
+</nav>
+<main>
+    <div class="eyebrow">Evidence Integrity System / Write Path</div>
+    <h1>Register evidence.</h1>
+    <p class="intro">Upload a file to permanently record its SHA-256 hash on the blockchain. The file itself is never stored on-chain.</p>
+    <form id="register-form">
+        <label>Case ID<input id="case-id" type="text" placeholder="CASE-2024-CR-045" required></label>
+        <label>Investigator name<input id="uploader" type="text" placeholder="Investigator Perera" required></label>
+        <label class="full">Signing account<select id="signer"></select></label>
+        <p class="hint">This is the blockchain account that submits the transaction. The contract rejects registration from any account not on the authorized investigators list.</p>
+        <label class="full">Evidence file<input id="file" type="file" required></label>
+        <button id="submit" type="submit">Register on blockchain</button>
+    </form>
+    <div id="error" role="alert"></div>
+    <section id="result" aria-live="polite">
+        <div id="banner" class="banner">REGISTERED</div>
+        <div class="details">
+            <div class="detail"><strong>Evidence ID</strong><code id="evidence-id"></code></div>
+            <div class="detail"><strong>SHA-256 hash</strong><code id="sha-hash"></code></div>
+            <div class="detail"><strong>Transaction hash</strong><code id="tx-hash"></code></div>
+        </div>
+    </section>
+</main>
+<script>
+    const form = document.querySelector('#register-form');
+    const submit = document.querySelector('#submit');
+    const error = document.querySelector('#error');
+    const signerSelect = document.querySelector('#signer');
+
+    fetch('/api/demo-signers').then((r) => r.json()).then((signers) => {
+        signerSelect.innerHTML = signers
+            .map((s) => `<option value="${s.address}">${s.label} — ${s.address}</option>`)
+            .join('');
+    });
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault(); error.textContent = ''; submit.disabled = true;
+        const data = new FormData();
+        data.append('file', document.querySelector('#file').files[0]);
+        data.append('caseId', document.querySelector('#case-id').value);
+        data.append('uploader', document.querySelector('#uploader').value);
+        data.append('signerAddress', signerSelect.value);
+        try {
+            const response = await fetch('/api/evidence', { method: 'POST', body: data });
+            if (!response.ok) throw new Error(await response.text());
+            const result = await response.json();
+            document.querySelector('#result').style.display = 'block';
+            document.querySelector('#evidence-id').textContent = result.evidenceId;
+            document.querySelector('#sha-hash').textContent = result.sha256Hash;
+            document.querySelector('#tx-hash').textContent = result.txHash;
+        } catch (exception) { error.textContent = exception.message || 'Registration failed.'; }
+        finally { submit.disabled = false; }
+    });
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:4000';
+const API_BASE = 'http://localhost:8080';
 
 const casesSection = document.getElementById('casesSection');
 const auditBody = document.getElementById('auditBody');
@@ -21,10 +21,11 @@ async function fetchJson(url, options = {}) {
   });
 
   if (!res.ok) {
-    throw new Error(`Request failed: ${res.status}`);
+    throw new Error(await res.text() || `Request failed: ${res.status}`);
   }
 
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 async function loadCases() {
@@ -106,19 +107,33 @@ async function loadInvestigators() {
 
 async function authorizeInvestigator(event) {
   event.preventDefault();
+  const errorEl = document.getElementById('investigatorError');
+  errorEl.textContent = '';
   const address = addressInput.value.trim();
 
   if (!address) {
     return;
   }
 
-  await fetchJson(`${API_BASE}/api/investigators`, {
-    method: 'POST',
-    body: JSON.stringify({ address })
-  });
+  try {
+    await fetchJson(`${API_BASE}/api/investigators`, {
+      method: 'POST',
+      body: JSON.stringify({ address })
+    });
 
-  addressInput.value = '';
-  loadInvestigators();
+    addressInput.value = '';
+    loadInvestigators();
+  } catch (exception) {
+    errorEl.textContent = exception.message || 'Authorization failed.';
+  }
+}
+
+async function loadDemoSigners() {
+  const signers = await fetchJson(`${API_BASE}/api/demo-signers`);
+  const demoSignersList = document.getElementById('demoSigners');
+  demoSignersList.innerHTML = signers
+    .map((s) => `<option value="${s.address}">${s.label}</option>`)
+    .join('');
 }
 
 refreshBtn.addEventListener('click', async () => {
@@ -130,3 +145,4 @@ investigatorForm.addEventListener('submit', authorizeInvestigator);
 loadCases();
 loadAuditTrail();
 loadInvestigators();
+loadDemoSigners();
